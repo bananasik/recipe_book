@@ -19,15 +19,18 @@ import com.bananasik.recipecollection.R;
 import java.util.ArrayList;
 
 import Adapters.SectionsListAdapter;
+import Data.DataManager;
 import Model.Section;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SectionsFragment extends Fragment {
+public class SectionsFragment extends Fragment implements ExpandableListView.OnChildClickListener,
+        ExpandableListView.OnGroupExpandListener, View.OnClickListener{
 
     private SectionsListAdapter adapter;
-    private  FloatingActionButton fab;
+    private FloatingActionButton fab;
+    private ExpandableListView expandableListView;
     private int lastFirstVisibleItem=0;
 
     public SectionsFragment() {
@@ -38,7 +41,7 @@ public class SectionsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ArrayList<Section> group = new ArrayList<>();
+        /*ArrayList<Section> group = new ArrayList<>();
         group.add(new Section(0, "Все"));
         group.add(new Section(1, "Раздел1"));
         group.add(new Section(2, "Раздел2"));
@@ -46,13 +49,22 @@ public class SectionsFragment extends Fragment {
         group.add(new Section(4, "Раздел4"));
         group.add(new Section(5, "Раздел5"));
         group.add(new Section(6, "Раздел6"));
-        group.add(new Section(7, "Прочее"));
+        group.add(new Section(7, "Прочее"));*/
 
-        ArrayList<ArrayList<Section>> elements = new ArrayList<>();
-        for(int i = 0; i < group.size(); i++){
-            elements.add(new ArrayList<Section>());
+        DataManager.getInstence().init(getActivity());
+        ArrayList<Section> sections = DataManager.getInstence().getSections();
+
+        ArrayList<ArrayList<Section>> subsections = new ArrayList<>();
+        for(int i = 0; i < sections.size(); i++){
+            subsections.add(DataManager.getInstence().getSubsections(sections.get(i).id));
         }
-        elements.get(1).add(new Section(0, "Подраздел1.1"));
+
+        sections.add(0, new Section(-1, "Все"));
+        sections.add(new Section(-1, "Прочее"));
+        subsections.add(0, new ArrayList<Section>());
+        subsections.add(new ArrayList<Section>());
+
+        /*elements.get(1).add(new Section(0, "Подраздел1.1"));
         elements.get(1).add(new Section(1, "Подраздел1.2"));
         elements.get(1).add(new Section(19, "Подраздел1.3"));
         elements.get(1).add(new Section(20, "Подраздел1.4"));
@@ -76,10 +88,9 @@ public class SectionsFragment extends Fragment {
 
         elements.get(6).add(new Section(16, "Подраздел6.1"));
         elements.get(6).add(new Section(17, "Подраздел6.2"));
-        elements.get(6).add(new Section(18, "Подраздел6.3"));
+        elements.get(6).add(new Section(18, "Подраздел6.3"));*/
 
-
-        adapter = new SectionsListAdapter(getActivity(), group, elements);
+        adapter = new SectionsListAdapter(getActivity(), sections, subsections);
     }
 
     @Override
@@ -87,54 +98,18 @@ public class SectionsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sections, container, false);
 
-        final ExpandableListView expandableListView = (ExpandableListView)view.findViewById(R.id.sections_list);
-        expandableListView.setAdapter(adapter);
-        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Log.v("MyLog", "group=" + groupPosition + "  child=" + childPosition);
-                return false;
-            }
-        });
-        expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-            @Override
-            public void onGroupExpand(int groupPosition) {
-                for (int i = 0; i < adapter.getGroupCount(); i++) {
-                    if (i == groupPosition) {
-                        continue;
-                    }
-                    if (expandableListView.isGroupExpanded(i)) {
-                        expandableListView.collapseGroup(i);
-                    }
-                }
-            }
-        });
+        expandableListView = (ExpandableListView)view.findViewById(R.id.sections_list);
+        fab = (FloatingActionButton) view.findViewById(R.id.fab_add_section);
 
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
-                PopupMenu popupMenu = new PopupMenu(getActivity(), fab);
-                popupMenu.getMenu().add("Добавить раздел");
-                popupMenu.getMenu().add("Добавить подраздел");
-                popupMenu.show();
-            }
-        });
+        expandableListView.setAdapter(adapter);
+        expandableListView.setOnChildClickListener(this);
+        expandableListView.setOnGroupExpandListener(this);
+
+        fab.setOnClickListener(this);
 
         expandableListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                /*int btn_initPosY = fab.getScrollY();
-                if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
-                    fab.animate().cancel();
-                    fab.animate().translationYBy(150);
-                } else {
-                    fab.animate().cancel();
-                    fab.animate().translationY(btn_initPosY);
-                }*/
-            }
+            public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -148,7 +123,6 @@ public class SectionsFragment extends Fragment {
                         fab.animate().translationY(btn_initPosY);
                     }
                 }
-
                 lastFirstVisibleItem = firstVisibleItem;
             }
         });
@@ -156,4 +130,36 @@ public class SectionsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        Log.v("MyLog", "group=" + groupPosition + "  child=" + childPosition);
+        return false;
+    }
+
+    @Override
+    public void onGroupExpand(int groupPosition) {
+        for (int i = 0; i < adapter.getGroupCount(); i++) {
+            if (i == groupPosition) {
+                continue;
+            }
+            if (expandableListView.isGroupExpanded(i)) {
+                expandableListView.collapseGroup(i);
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.fab_add_section:
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
+                PopupMenu popupMenu = new PopupMenu(getActivity(), fab);
+                popupMenu.getMenu().add("Добавить раздел");
+                popupMenu.getMenu().add("Добавить подраздел");
+                popupMenu.show();
+                break;
+        }
+    }
 }
