@@ -18,7 +18,7 @@ public class SplashScreenActivity extends Activity {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    TimeUnit.SECONDS.sleep(1);
+                    TimeUnit.SECONDS.sleep(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

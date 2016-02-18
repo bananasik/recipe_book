@@ -2,6 +2,7 @@ package Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -73,22 +74,27 @@ public class SectionsListAdapter extends BaseExpandableListAdapter {
             convertView = lInflater.inflate(R.layout.cle_section, parent, false);
         }
         TextView textView = (TextView)convertView.findViewById(R.id.textViewSection);
-        textView.setText(listGroups.get(groupPosition).name);
-        convertView.findViewById(R.id.imageViewIndicator).setVisibility(View.VISIBLE);
-        if(groupPosition == 0 || groupPosition == 7){
-            convertView.findViewById(R.id.imageViewIndicator).setVisibility(View.INVISIBLE);
-        }
+        ImageView indicantor = (ImageView)convertView.findViewById(R.id.imageViewIndicator);
 
-        if(isExpanded){
-            convertView.setBackgroundColor(context.getResources().getColor(R.color.colorBackgroundChoose));
-            ((ImageView)convertView.findViewById(R.id.imageViewIndicator)).setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        textView.setText(listGroups.get(groupPosition).name);
+
+        if(groupPosition == 0 || groupPosition == listGroups.size()-1){
+            indicantor.setVisibility(View.INVISIBLE);
         }
         else{
-            convertView.setBackgroundColor(0x0);
-            ((ImageView)convertView.findViewById(R.id.imageViewIndicator)).setImageResource(R.drawable.ic_keyboard_arrow_right_black_24dp);
+            indicantor.setVisibility(View.VISIBLE);
         }
 
-        convertView.findViewById(R.id.imageButton).setOnClickListener(new View.OnClickListener() {
+        if(groupPosition != 0 && groupPosition != listGroups.size()-1) {
+            if (isExpanded) {
+                convertView.setBackgroundColor(context.getResources().getColor(R.color.colorBackgroundChoose));
+                ((ImageView) convertView.findViewById(R.id.imageViewIndicator)).setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+            } else {
+                convertView.setBackgroundColor(0x0);
+                ((ImageView) convertView.findViewById(R.id.imageViewIndicator)).setImageResource(R.drawable.ic_keyboard_arrow_right_black_24dp);
+            }
+        }
+        convertView.findViewById(R.id.image_button_more).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -105,10 +111,25 @@ public class SectionsListAdapter extends BaseExpandableListAdapter {
         }
         TextView textView = (TextView)convertView.findViewById(R.id.textViewSubsection);
         textView.setText(listElements.get(groupPosition).get(childPosition).name);
-        convertView.findViewById(R.id.imageButton).setOnClickListener(new View.OnClickListener() {
+        ImageView buttonMore = (ImageView)convertView.findViewById(R.id.image_button_more);
+        buttonMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+        buttonMore.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        v.setAlpha(1);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        v.setAlpha(0.5f);
+                        break;
+                }
+                return false;
             }
         });
 
