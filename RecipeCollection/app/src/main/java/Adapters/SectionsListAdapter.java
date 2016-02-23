@@ -94,10 +94,25 @@ public class SectionsListAdapter extends BaseExpandableListAdapter {
                 ((ImageView) convertView.findViewById(R.id.imageViewIndicator)).setImageResource(R.drawable.ic_keyboard_arrow_right_black_24dp);
             }
         }
-        convertView.findViewById(R.id.image_button_more).setOnClickListener(new View.OnClickListener() {
+        ImageView buttonMore = (ImageView)convertView.findViewById(R.id.image_button_more);
+        buttonMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+        buttonMore.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setAlpha(1);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        v.setAlpha(0.5f);
+                        break;
+                }
+                return false;
             }
         });
         return convertView;

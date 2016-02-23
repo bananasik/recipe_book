@@ -27,6 +27,37 @@ public class DataBaseManager extends SQLiteOpenHelper{
                 "  [name] VARCHAR(50) NOT NULL, \n" +
                 "  [id_section] INTEGER NOT NULL CONSTRAINT [id_section] REFERENCES [Section]([_id]) ON DELETE CASCADE);");
 
+        db.execSQL("CREATE TABLE [Recipe] (\n" +
+                "  [_id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \n" +
+                "  [name] VARCHAR(50) NOT NULL, \n" +
+                "  [description] TEXT, \n" +
+                "  [rating] DECIMAL NOT NULL DEFAULT 0, \n" +
+                "  [time] TIME, \n" +
+                "  [image] BLOB, \n" +
+                "  [id_subsection] INTEGER CONSTRAINT [id_subsectin] REFERENCES [Subsection]([_id]) ON DELETE SET NULL, \n" +
+                "  CONSTRAINT [rating] CHECK(rating > 0 and rating < 5));");
+
+        db.execSQL("CREATE TABLE [Ingredient] (\n" +
+                "  [_id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \n" +
+                "  [name] VARCHAR(50) NOT NULL);");
+
+        db.execSQL("CREATE TABLE [Measurement] (\n" +
+                "  [_id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \n" +
+                "  [name] VARCHAR(10) NOT NULL);");
+
+        db.execSQL("CREATE TABLE [Ingredient_Measurement] (\n" +
+                "  [_id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \n" +
+                "  [id_ingredient] INTEGER NOT NULL CONSTRAINT [id_ingredient] REFERENCES [Ingredient]([_id]) ON DELETE CASCADE, \n" +
+                "  [id_measurement] INTEGER NOT NULL CONSTRAINT [id_measurement] REFERENCES [Measurement]([_id]) ON DELETE CASCADE);");
+
+        db.execSQL("CREATE TABLE [Ingredient_Recipe] (\n" +
+                "  [_id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \n" +
+                "  [id_ingredient] INTEGER NOT NULL CONSTRAINT [id_ingredient] REFERENCES [Ingredient]([_id]) ON DELETE NO ACTION, \n" +
+                "  [id_recipe] INTEGER NOT NULL CONSTRAINT [id_recipe] REFERENCES [Recipe]([_id]) ON DELETE CASCADE, \n" +
+                "  [id_measurement] INTEGER NOT NULL CONSTRAINT [id_measurement] REFERENCES [Measurement]([_id]) ON DELETE NO ACTION, \n" +
+                "  [count] DECIMAL NOT NULL, \n" +
+                "  [group] VARCHAR(30));");
+
         db.execSQL("insert into [Section] (name) values " +
                 "('Раздел1')," +
                 "('Раздел2')," +
@@ -58,6 +89,29 @@ public class DataBaseManager extends SQLiteOpenHelper{
                 "('Подраздел6.1', 6)," +
                 "('Подраздел6.2', 6)," +
                 "('Подраздел6.3', 6)");
+
+        db.execSQL("insert into [Ingredient] (name) values " +
+                "('Мясо')," +
+                "('Сок лимона')," +
+                "('Чеснок')," +
+                "('Специи')," +
+                "('Куринное филе')," +
+                "('Шампиньоны')," +
+                "('Картошка')," +
+                "('Лук')," +
+                "('Морковь')," +
+                "('Яйцо')," +
+                "('Сметана')," +
+                "('Молоко')," +
+                "('Мука')," +
+                "('Сахар')," +
+                "('Рыба')," +
+                "('Соль')," +
+                "('Желе')," +
+                "('Вода'),");
+
+        db.close();
+
     }
 
     @Override
@@ -73,13 +127,9 @@ public class DataBaseManager extends SQLiteOpenHelper{
             cursor.moveToNext();
             sections.add(new Section(cursor.getInt(0), cursor.getString(1)));
         }
+        readableDatabase.close();
         return sections;
     }
-
-    /*public ArrayList<ArrayList<Section>> getAllSubsection(){
-        SQLiteDatabase readableDatabase = getReadableDatabase();
-        Cursor cursor = readableDatabase.rawQuery("select _id, name from [Section]", null);
-    }*/
 
     public ArrayList<Section> getSubsections(int idSection){
         SQLiteDatabase readableDatabase = getReadableDatabase();
@@ -89,7 +139,27 @@ public class DataBaseManager extends SQLiteOpenHelper{
             cursor.moveToNext();
             subsections.add(new Section(cursor.getInt(0), cursor.getString(1)));
         }
+        readableDatabase.close();
         return subsections;
     }
 
+    public void addSection(Section section){
+        SQLiteDatabase writableDatabase = getWritableDatabase();
+        String query = "insert into [Section] (name) values ('" + section.name + "')";
+        writableDatabase.execSQL(query);
+        Cursor cursor = writableDatabase.rawQuery("last_insert_rowid()", null);
+        cursor.moveToNext();
+        section.id = cursor.getInt(0);
+        writableDatabase.close();
+    }
+
+    public void addSubsection(Section subsection, int idSection){
+        SQLiteDatabase writableDatabase = getWritableDatabase();
+        String query = "insert into [Subsection] (name, id_section) values ('" + subsection.name + "', " + idSection + ")";
+        writableDatabase.execSQL(query);
+        Cursor cursor = writableDatabase.rawQuery("last_insert_rowid()", null);
+        cursor.moveToNext();
+        subsection.id = cursor.getInt(0);
+        writableDatabase.close();
+    }
 }

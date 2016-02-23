@@ -5,5 +5,6 @@
     <color name="colorAccent">#ffc800</color>
     <color name="colorBackground">#fff9e6</color>
     <color name="colorBackgroundChoose">#f7f1de</color>
+    <color name="colorBackgroundPressedChild">#ede8d6</color>
 
 </resources>

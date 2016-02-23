@@ -38,4 +38,12 @@ public class DataManager {
     public ArrayList<Section> getSubsections(int idSection){
         return dataBaseManager.getSubsections(idSection);
     }
+
+    public void addSection(Section section){
+        dataBaseManager.addSection(section);
+    }
+
+    public void addSubsection(Section subsection, int idSection){
+        dataBaseManager.addSubsection(subsection, idSection);
+    }
 }

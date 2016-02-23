@@ -14,6 +14,7 @@ import android.widget.AbsListView;
 import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
 
+import com.bananasik.recipecollection.MainActivity;
 import com.bananasik.recipecollection.R;
 
 import java.util.ArrayList;
@@ -132,6 +133,8 @@ public class SectionsFragment extends Fragment implements ExpandableListView.OnC
 
     @Override
     public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        ((MainActivity) getActivity()).fragmentManager
+                .replaceFragment(R.id.fragment_container, new RecipesListFragment(), "RecipesListFragment", true);
         Log.v("MyLog", "group=" + groupPosition + "  child=" + childPosition);
         return false;
     }

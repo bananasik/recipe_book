@@ -5,11 +5,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.bananasik.recipecollection.MainActivity;
 import com.bananasik.recipecollection.R;
 
 import java.io.BufferedInputStream;
@@ -34,7 +40,9 @@ import Model.RecipeIngredientCollection;
 public class RecipesListFragment extends Fragment {
 
     private RecipesListAdapter adapter;
-
+    private FloatingActionButton fab;
+    private ListView recipesList;
+    private int lastFirstVisibleItem=0;
 
     public RecipesListFragment() {
         // Required empty public constructor
@@ -65,6 +73,8 @@ public class RecipesListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        ((MainActivity) getActivity()).setDrawerState(false); // вызов метода для блокировки левого меню
 
         ArrayList<Recipe> recipes = new ArrayList<>();
         ArrayList<RecipeIngredient> ing = new ArrayList<>();
@@ -124,13 +134,51 @@ public class RecipesListFragment extends Fragment {
         ric = new RecipeIngredientCollection(ing);
         recipes.add(new Recipe(7,"Recipe 7", 1, 15, null, 0, 4.2, ric ));
 
-
+        // конец создания коллекции рецептов для тестирования, подлежит уничтожению
+        // после того, как будет сделана подгрузка рецептов из БД
 
         View view = inflater.inflate(R.layout.fragment_recipes_list, container, false);
-        ListView recipesList = (ListView) view.findViewById(R.id.recipes_list);
+        recipesList = (ListView) view.findViewById(R.id.recipes_list);
         adapter = new RecipesListAdapter(getActivity(), new RecipeCollection(recipes));
         recipesList.setAdapter(adapter);
 
+        fab = (FloatingActionButton) view.findViewById(R.id.fab_add_recipe);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                 Snackbar.make(v, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+        recipesList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                int btn_initPosY = fab.getScrollY();
+                if (firstVisibleItem > lastFirstVisibleItem) {
+                    fab.animate().cancel();
+                    fab.animate().translationYBy(150);
+                } else {
+                    if (firstVisibleItem < lastFirstVisibleItem) {
+                        fab.animate().cancel();
+                        fab.animate().translationY(btn_initPosY);
+                    }
+                }
+                lastFirstVisibleItem = firstVisibleItem;
+            }
+        });
+
+        recipesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ((MainActivity) getActivity()).fragmentManager
+                        .replaceFragment(R.id.fragment_container, new RecipeFragment(), "RecipeFragment", true);
+            }
+        });
 
         return  view;
     }
