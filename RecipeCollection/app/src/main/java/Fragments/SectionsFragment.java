@@ -1,6 +1,7 @@
 package Fragments;
 
 
+import android.app.DialogFragment;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +9,8 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -27,9 +30,9 @@ import Model.Section;
  * A simple {@link Fragment} subclass.
  */
 public class SectionsFragment extends Fragment implements ExpandableListView.OnChildClickListener,
-        ExpandableListView.OnGroupExpandListener, View.OnClickListener{
+        ExpandableListView.OnGroupExpandListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener, AddSectionsDialogFragment.AddSectionButtonClickedDialogListener {
 
-    private SectionsListAdapter adapter;
+    SectionsListAdapter adapter;
     private FloatingActionButton fab;
     private ExpandableListView expandableListView;
     private int lastFirstVisibleItem=0;
@@ -159,10 +162,43 @@ public class SectionsFragment extends Fragment implements ExpandableListView.OnC
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
                 PopupMenu popupMenu = new PopupMenu(getActivity(), fab);
-                popupMenu.getMenu().add("Добавить раздел");
-                popupMenu.getMenu().add("Добавить подраздел");
+                popupMenu.getMenu().add(Menu.NONE, 1, Menu.NONE, "Добавить раздел");
+                popupMenu.getMenu().add(Menu.NONE, 2, Menu.NONE,"Добавить подраздел");
+                popupMenu.setOnMenuItemClickListener(this);
                 popupMenu.show();
                 break;
         }
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        Bundle arguments = new Bundle();
+        arguments.putInt("ItemId", item.getItemId());
+        ArrayList<String> groupsNamesList = new ArrayList<>();
+        for (Section s: adapter.getListGroups()) {
+            groupsNamesList.add(s.name);
+        }
+        groupsNamesList.remove(groupsNamesList.size()-1);
+        groupsNamesList.remove(0);
+        arguments.putStringArrayList("SectionsList", groupsNamesList);
+        AddSectionsDialogFragment dialog = new AddSectionsDialogFragment();
+        dialog.setArguments(arguments);
+        dialog.setListener(SectionsFragment.this);
+        dialog.show(getActivity().getFragmentManager(), "AddSectionsDialogFragment");
+        return false;
+    }
+
+    @Override
+    public void onAddSection(Section section) {
+        DataManager.getInstence().addSection(section);
+        adapter.getListGroups().add(adapter.getGroupCount() - 1, section);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onAddSubsection(Section subsection, int parentIndex) {
+        DataManager.getInstence().addSubsection(subsection, adapter.getListGroups().get(parentIndex).id);
+        adapter.getGroupChildList(parentIndex).add(subsection);
+        adapter.notifyDataSetChanged();
     }
 }

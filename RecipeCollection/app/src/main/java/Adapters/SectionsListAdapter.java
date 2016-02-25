@@ -155,4 +155,12 @@ public class SectionsListAdapter extends BaseExpandableListAdapter {
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
     }
+
+    public ArrayList<Section> getListGroups(){
+        return listGroups;
+    }
+
+    public  ArrayList<Section> getGroupChildList(int index){
+        return listElements.get(index);
+    }
 }
